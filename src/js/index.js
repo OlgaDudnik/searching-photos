@@ -30,6 +30,7 @@ loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 function onLoadMoreBtn() {
   page += 1;
   getImages(searchQuery, true);
+  simpleLightBox.destroy();
 }
 
 form.addEventListener('submit', e => {
@@ -41,10 +42,8 @@ form.addEventListener('submit', e => {
     page = 1;
   }
 
-  if (page === 1) {
-    if (loadMoreBtn.classList.contains('hidden')) {
-      loadMoreBtn.classList.remove('hidden');
-    }
+  if (loadMoreBtn.classList.contains('hidden')) {
+    loadMoreBtn.classList.remove('hidden');
   }
 
   searchQuery = searchInput.value;
@@ -84,29 +83,33 @@ function createMarkup(images) {
 function getImages(query, loadMore) {
   const apiUrl = '?' + generateUrl() + `&page=${page}&q=${query}`;
 
-  axios.get(apiUrl).then(({ data }) => {
-    if (loadMore) {
-      gallery.insertAdjacentHTML('beforeend', createMarkup(data.hits));
-    } else {
-      gallery.innerHTML = createMarkup(data.hits);
-    }
+  axios
+    .get(apiUrl)
+    .then(({ data, perPage }) => {
+      if (loadMore) {
+        gallery.insertAdjacentHTML('beforeend', createMarkup(data.hits));
+      } else {
+        gallery.innerHTML = createMarkup(data.hits);
+      }
 
-    if (!data.totalHits) {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    } else {
-      createMarkup(data.hits);
-      Notify.success(`Hooray! We found ${data.totalHits} images.`);
-    }
+      if (!data.totalHits) {
+        Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+      } else {
+        createMarkup(data.hits);
+        simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+        Notify.success(`Hooray! We found ${data.totalHits} images.`);
+      }
 
-    if (page * apiParams.per_page >= data.totalHits) {
-      loadMoreBtn.classList.add('hidden');
-      Notify.failure(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
+      let totalPages = Math.ceil(data.totalHits / apiParams.per_page);
 
-    let lightbox = new SimpleLightbox('.gallery a');
-  });
+      if (page >= totalPages) {
+        loadMoreBtn.classList.add('hidden');
+        Notify.failure(
+          "We're sorry, but you've reached the end of search results."
+        );
+      }
+    })
+    .catch(error => console.log(error));
 }
