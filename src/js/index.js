@@ -96,6 +96,7 @@ function getImages(query, loadMore) {
         Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
+        return;
       } else {
         createMarkup(data.hits);
         simpleLightBox = new SimpleLightbox('.gallery a').refresh();
@@ -104,7 +105,7 @@ function getImages(query, loadMore) {
 
       let totalPages = Math.ceil(data.totalHits / apiParams.per_page);
 
-      if (page >= totalPages) {
+      if (page > totalPages) {
         loadMoreBtn.classList.add('hidden');
         Notify.failure(
           "We're sorry, but you've reached the end of search results."
