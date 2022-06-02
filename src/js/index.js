@@ -93,6 +93,7 @@ function getImages(query, loadMore) {
       }
 
       if (!data.totalHits) {
+        loadMoreBtn.classList.add('hidden');
         Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
