@@ -100,7 +100,7 @@ function getImages(query, loadMore) {
         return;
       } else {
         createMarkup(data.hits);
-        simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+        let simpleLightBox = new SimpleLightbox('.gallery a');
         Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
 
