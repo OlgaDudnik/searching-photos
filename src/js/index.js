@@ -30,7 +30,6 @@ loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 function onLoadMoreBtn() {
   page += 1;
   getImages(searchQuery, true);
-  simpleLightBox.destroy();
 }
 
 form.addEventListener('submit', e => {
