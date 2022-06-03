@@ -5,7 +5,6 @@ import './../css/styles.css';
 import axios from 'axios';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
-let page = 1;
 let searchQuery = '';
 
 const apiParams = {
@@ -20,6 +19,9 @@ const gallery = document.querySelector('.gallery');
 const form = document.getElementById('search-form');
 const searchInput = form.querySelector('input[name="searchQuery"]');
 const loadMoreBtn = document.querySelector('.load-more');
+let totalPages = 0;
+let currentPage = 1;
+let isLastPage = false;
 
 function generateUrl() {
   return new URLSearchParams(apiParams).toString();
@@ -28,17 +30,19 @@ function generateUrl() {
 loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 
 function onLoadMoreBtn() {
-  page += 1;
+  currentPage += 1;
   getImages(searchQuery, true);
 }
 
 form.addEventListener('submit', e => {
   e.preventDefault();
 
-  if (searchInput.value === searchQuery) {
-    page += 1;
+  let isSameSearchQuery = searchInput.value === searchQuery;
+
+  if (isSameSearchQuery) {
+    currentPage += 1;
   } else {
-    page = 1;
+    currentPage = 1;
   }
 
   if (loadMoreBtn.classList.contains('hidden')) {
@@ -48,7 +52,7 @@ form.addEventListener('submit', e => {
   searchQuery = searchInput.value;
   form.reset();
 
-  getImages(searchQuery, false);
+  getImages(searchQuery, isSameSearchQuery);
 });
 
 function createMarkup(images) {
@@ -80,11 +84,11 @@ function createMarkup(images) {
 }
 
 function getImages(query, loadMore) {
-  const apiUrl = '?' + generateUrl() + `&page=${page}&q=${query}`;
+  const apiUrl = '?' + generateUrl() + `&page=${currentPage}&q=${query}`;
 
   axios
     .get(apiUrl)
-    .then(({ data, perPage }) => {
+    .then(({ data }) => {
       if (loadMore) {
         gallery.insertAdjacentHTML('beforeend', createMarkup(data.hits));
       } else {
@@ -103,9 +107,9 @@ function getImages(query, loadMore) {
         Notify.success(`Hooray! We found ${data.totalHits} images.`);
       }
 
-      let totalPages = Math.ceil(data.totalHits / apiParams.per_page);
+      totalPages = Math.ceil(data.totalHits / apiParams.per_page);
 
-      if (page > totalPages) {
+      if (currentPage >= totalPages) {
         loadMoreBtn.classList.add('hidden');
         Notify.failure(
           "We're sorry, but you've reached the end of search results."
